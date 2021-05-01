@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Image,
   TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
@@ -28,35 +29,37 @@ const Login = (props: ILoginProps) => {
         style={styles.gradient}
         colors={[ThemeColor.MING, ThemeColor.SMOKY, ThemeColor.TURKISH_ROSE]}
       />
-      <View style={styles.titleLayout}>
-        <Text style={styles.titleStyle}>Login</Text>
-      </View>
-      <View style={styles.logoLayout}>
-        <Image
-          style={styles.logoStyle}
-          source={require("../../../assets/windows.png")}
-        />
-      </View>
-      <View style={styles.formLayout}>
-        <View style={styles.inputLayout}>
-          <TextInput style={styles.inputStyle} placeholder="Enter username" />
+      <KeyboardAvoidingView behavior="position">
+        <View style={styles.titleLayout}>
+          <Text style={styles.titleStyle}>Login</Text>
         </View>
-        <View style={[styles.inputLayout, styles.smallSpacing]}>
-          <TextInput
-            style={styles.inputStyle}
-            placeholder="Enter password"
-            secureTextEntry
+        <View style={styles.logoLayout}>
+          <Image
+            style={styles.logoStyle}
+            source={require("../../../assets/windows.png")}
           />
         </View>
-        <View style={[styles.smallSpacing]}>
-          <Button
-            title="Submit"
-            onPress={handleLogin}
-            backgroundColor={ThemeColor.INDIGO_DARKEN_4}
-            color={ThemeColor.WHITE_COLOR}
-          />
+        <View style={styles.formLayout}>
+          <View style={styles.inputLayout}>
+            <TextInput style={styles.inputStyle} placeholder="Enter username" />
+          </View>
+          <View style={[styles.inputLayout, styles.smallSpacing]}>
+            <TextInput
+              style={styles.inputStyle}
+              placeholder="Enter password"
+              secureTextEntry
+            />
+          </View>
+          <View style={[styles.smallSpacing]}>
+            <Button
+              title="Submit"
+              onPress={handleLogin}
+              backgroundColor={ThemeColor.INDIGO_DARKEN_4}
+              color={ThemeColor.WHITE_COLOR}
+            />
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
