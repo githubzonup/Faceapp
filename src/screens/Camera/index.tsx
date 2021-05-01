@@ -14,6 +14,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
   const { navigation } = props;
 
   const [hasPermission, setHasPermission] = useState<unknown>(null);
+  const [camera, setCamera] = useState(Camera.Constants.Type.front);
 
   async function requestCameraPermission(): Promise<void> {
     const { status } = await Camera.requestPermissionsAsync();
@@ -32,11 +33,18 @@ const CameraScreen = (props: ICameraScreenProps) => {
   }
 
   function handleConfirm(): void {
-    navigation.navigate(ScreenRouter.REGISTRATION_MENU)
+    navigation.navigate(ScreenRouter.REGISTRATION_MENU);
+  }
+
+  function handleSwitchCamera(): void {
+    camera === Camera.Constants.Type.front &&
+      setCamera(Camera.Constants.Type.back);
+    camera === Camera.Constants.Type.back &&
+      setCamera(Camera.Constants.Type.front);
   }
 
   function handleLogout(): void {
-    navigation.navigate(ScreenRouter.LOGIN)
+    navigation.navigate(ScreenRouter.LOGIN);
   }
 
   return (
@@ -56,16 +64,28 @@ const CameraScreen = (props: ICameraScreenProps) => {
         <Camera
           ratio="4:3"
           style={styles.cameraStyle}
-          type={Camera.Constants.Type.front}
+          type={camera}
         />
       </View>
       <View style={styles.formLayout}>
-        <View style={[styles.mediumSpacing]}>
+        <View style={[styles.smallSpacing]}>
           <Button
             title="confirm"
             backgroundColor={ThemeColor.PINK_DARKEN_4}
             color={ThemeColor.WHITE_COLOR}
             onPress={handleConfirm}
+          />
+        </View>
+        <View style={[styles.smallSpacing]}>
+          <Button
+            title={
+              camera === Camera.Constants.Type.front
+                ? "switch back camera"
+                : "switch front camera"
+            }
+            backgroundColor={ThemeColor.TEAL_DARKEN_4}
+            color={ThemeColor.WHITE_COLOR}
+            onPress={handleSwitchCamera}
           />
         </View>
       </View>
@@ -81,14 +101,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     textAlign: "right",
   },
-  titleLayout: {
-    marginTop: "15%",
-  },
-  titleStyle: {
-    color: ThemeColor.WHITE_COLOR,
-    textAlign: "center",
-    fontSize: 24,
-  },
   cameraLayout: {
     marginTop: "15%",
     minHeight: (Dimensions.get("window").width * 4) / 3,
@@ -99,6 +111,9 @@ const styles = StyleSheet.create({
   formLayout: {
     width: "80%",
     alignSelf: "center",
+  },
+  smallSpacing: {
+    marginTop: "6%",
   },
   mediumSpacing: {
     marginTop: "12%",
