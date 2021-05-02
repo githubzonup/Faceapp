@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,17 +11,40 @@ import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
+import { observer } from "mobx-react";
+import useStores from "../../utils/useStore";
 
 interface ILoginProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
 const Login = (props: ILoginProps) => {
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const { navigation } = props;
+  const { userStore } = useStores();
+  const userDetail = userStore.userDetail;
 
-  function handleLogin(): void {
-    navigation.navigate(ScreenRouter.REGISTRATION_MENU);
+  async function handleLogin(): Promise<void> {
+    setLoading(true);
+    const credential: FormData = new FormData();
+    credential.append("username", username);
+    credential.append("password", password);
+    const user = await userStore.login(credential);
+    if (user?.manage_id) {
+      setUsername("");
+      setPassword("");
+      navigation.navigate(ScreenRouter.REGISTRATION_MENU);
+    }
+    setLoading(false);
   }
+
+  useEffect(() => {
+    if (userDetail?.manage_id) {
+      navigation.navigate(ScreenRouter.REGISTRATION_MENU);
+    }
+  }, [userDetail]);
 
   return (
     <View style={styles.container}>
@@ -41,18 +64,25 @@ const Login = (props: ILoginProps) => {
         </View>
         <View style={styles.formLayout}>
           <View style={styles.inputLayout}>
-            <TextInput style={styles.inputStyle} placeholder="Enter username" />
+            <TextInput
+              style={styles.inputStyle}
+              placeholder="Enter username"
+              value={username}
+              onChangeText={(username: string) => setUsername(username)}
+            />
           </View>
           <View style={[styles.inputLayout, styles.smallSpacing]}>
             <TextInput
               style={styles.inputStyle}
               placeholder="Enter password"
               secureTextEntry
+              value={password}
+              onChangeText={(password: string) => setPassword(password)}
             />
           </View>
           <View style={[styles.smallSpacing]}>
             <Button
-              title="Submit"
+              title={loading ? "Loading" : "Submit"}
               onPress={handleLogin}
               backgroundColor={ThemeColor.INDIGO_DARKEN_4}
               color={ThemeColor.WHITE_COLOR}
@@ -76,7 +106,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   logoLayout: {
-    paddingTop: "20%",
+    paddingTop: "10%",
   },
   logoStyle: {
     width: 200,
@@ -103,4 +133,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default observer(Login);

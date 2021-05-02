@@ -4,12 +4,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
+import useStores from "../../utils/useStore";
+import { ScanCategory } from "../../types/scanner";
 
 interface IRegistrationMenuProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
 const RegistrationMenu = (props: IRegistrationMenuProps) => {
+  const { userStore } = useStores();
   const { navigation } = props;
 
   function handleRegistration(): void {
@@ -17,10 +20,13 @@ const RegistrationMenu = (props: IRegistrationMenuProps) => {
   }
 
   function handleAttendance(): void {
-    navigation.navigate(ScreenRouter.CAMERA);
+    navigation.navigate(ScreenRouter.CAMERA, {
+      scanCategory: ScanCategory.ATTENDANCE,
+    });
   }
 
-  function handleLogout(): void {
+  async function handleLogout(): Promise<void> {
+    await userStore.logout();
     navigation.navigate(ScreenRouter.LOGIN);
   }
 
