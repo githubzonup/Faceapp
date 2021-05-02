@@ -73,7 +73,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
 
   async function handleConfirm(): Promise<void> {
     setLoading(true);
-    let photo = await cameraRef?.takePictureAsync({ quality: 0.75 });
+    let photo = await cameraRef?.takePictureAsync({ quality: 0.5 });
     const uri: string = photo?.uri || "";
     const imageNameChunks: string[] = uri?.split("/");
     const imageName: string = imageNameChunks[imageNameChunks?.length - 1];
