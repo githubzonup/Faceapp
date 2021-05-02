@@ -5,6 +5,7 @@ import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
 import UserCard from "../../components/UserCard";
+import { ScanCategory } from "../../types/scanner";
 
 interface ILoginProps {
   navigation: NavigationProp<ParamListBase>;
@@ -18,7 +19,9 @@ const FaceRegistration = (props: ILoginProps) => {
   }
 
   function handleTakeFace(): void {
-    navigation.navigate(ScreenRouter.CAMERA);
+    navigation.navigate(ScreenRouter.CAMERA, {
+      scanCategory: ScanCategory.REGISTRATION,
+    });
   }
 
   function handleScanQr(): void {
@@ -26,7 +29,9 @@ const FaceRegistration = (props: ILoginProps) => {
   }
 
   function handleEmployNumber(): void {
-    navigation.navigate(ScreenRouter.CAMERA);
+    navigation.navigate(ScreenRouter.CAMERA, {
+      scanCategory: ScanCategory.REGISTRATION,
+    });
   }
 
   return (
@@ -98,7 +103,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   logoLayout: {
-    paddingTop: "20%",
+    paddingTop: "5%",
   },
   logoStyle: {
     width: 200,

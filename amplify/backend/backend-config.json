@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "trailapplication4da2a4db": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  },
+  "storage": {
+    "s33722306b": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation"
+    }
+  }
+}
