@@ -25,7 +25,6 @@ const Login = (props: ILoginProps) => {
   const { navigation } = props;
   const { userStore } = useStores();
   const userDetail = userStore.userDetail;
-
   async function handleLogin(): Promise<void> {
     setLoading(true);
     const credential: FormData = new FormData();

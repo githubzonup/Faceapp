@@ -1,16 +1,30 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { action, observable } from "mobx";
-import { login } from "../API/user";
-import { IUser } from "../types";
+import { action, observable, set } from "mobx";
+import { getEmployeeDetail, login } from "../API/user";
+import { IEmployee, IUser } from "../types";
 import { StorageKeys } from "../constants";
 
-class WebsiteUserStore {
+class UserStore {
   @observable
   public userDetail: IUser = {
     manage_id: "",
     username: "",
   };
+
+  public employeeDetail: IEmployee = {
+    firstname: "",
+    lastname: "",
+    Age: "",
+    Image: "",
+  };
+
+  public selectedEmployeeId: string = "";
+
+  @action
+  public setEmployDetail(employeeDetail: any): void {
+    this.employeeDetail = { ...employeeDetail };
+  }
 
   @action
   public async login(credential: FormData): Promise<IUser> {
@@ -42,6 +56,27 @@ class WebsiteUserStore {
       console.log("User not logged!");
     }
   }
+
+  @action
+  public async fetchEmployDetail(employId: string): Promise<void> {
+    this.employeeDetail = await getEmployeeDetail(employId);
+  }
+
+  @action
+  public setSelectedEmployeeId(employeeId: string): void {
+    this.selectedEmployeeId = employeeId;
+  }
+
+  @action
+  public clearStore(): void {
+    this.employeeDetail = {
+      firstname: "",
+      lastname: "",
+      Age: "",
+      Image: "",
+    };
+    this.selectedEmployeeId = "";
+  }
 }
 
-export default WebsiteUserStore;
+export default UserStore;

@@ -8,7 +8,16 @@ import Button from "../../components/Button";
 import { Camera } from "expo-camera";
 import { Storage } from "aws-amplify";
 import { ScanCategory } from "../../types/scanner";
-import { registerFaceId, verifyFaceId } from "../../API/faceId";
+import {
+  insertEmployeeFaceId,
+  registerFaceId,
+  searchEmployeeFaceId,
+  verifyFaceId,
+} from "../../API/faceId";
+import { observer } from "mobx-react";
+import useStores from "../../utils/useStore";
+import { createAttendance } from "../../API/user";
+import { IEmployee } from "../../types";
 
 interface ICameraScreenProps {
   route: any;
@@ -19,9 +28,12 @@ const CameraScreen = (props: ICameraScreenProps) => {
   const { navigation, route } = props;
   const [loading, setLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState<unknown>(null);
+  const { userStore } = useStores();
   const [camera, setCamera] = useState(Camera.Constants.Type.front);
+
   let cameraRef: Camera | null;
-  const scanCategory = get(route, "params.scanCategory", "");
+  const scanCategory: ScanCategory = get(route, "params.scanCategory", "");
+  const selectedEmployeeId: string = userStore?.selectedEmployeeId;
 
   async function requestCameraPermission(): Promise<void> {
     const { status } = await Camera.requestPermissionsAsync();
@@ -49,9 +61,15 @@ const CameraScreen = (props: ICameraScreenProps) => {
       await Storage.put(`attendance/${imageName}`, blob, {
         contentType: "image/jpeg",
       });
-      const faceId = await verifyFaceId(imageName);
+      const faceDocument = await verifyFaceId(imageName);
+      const faceId: string = get(faceDocument, "FaceMatches.[0].Face.FaceId");
       await Storage.remove(`attendance/${imageName}`);
-      Alert.alert("Found face ID", get(faceId, "FaceMatches.[0].Face.FaceId"));
+      const employeeId: string = await searchEmployeeFaceId(faceId);
+      if (!employeeId) return;
+      await createAttendance(userStore?.userDetail?.manage_id, employeeId);
+      Alert.alert("Completed", faceId);
+      userStore.clearStore();
+      navigation.navigate(ScreenRouter.REGISTRATION_MENU);
     } catch (err) {
       console.log("Error uploading file:", err);
     }
@@ -59,13 +77,26 @@ const CameraScreen = (props: ICameraScreenProps) => {
 
   async function handleRegister(uri: string, imageName: string): Promise<void> {
     try {
+      if (!selectedEmployeeId) return;
       const response = await fetch(uri);
       const blob = await response.blob();
       await Storage.put(`register/${imageName}`, blob, {
         contentType: "image/jpeg",
       });
-      const faceId = await registerFaceId(imageName);
-      Alert.alert("Saved face ID", get(faceId, "FaceRecords.[0].Face.FaceId"));
+      const faceDocument = await registerFaceId(imageName);
+      const faceId: string = get(
+        faceDocument,
+        "FaceRecords[0].Face.FaceId",
+        ""
+      );
+      if (!faceId) {
+        Alert.alert("Information", "Face not found");
+        return;
+      }
+      await insertEmployeeFaceId(faceId, selectedEmployeeId);
+      Alert.alert("Saved face ID", faceId);
+      userStore.clearStore();
+      navigation.navigate(ScreenRouter.REGISTRATION_MENU);
     } catch (err) {
       console.log("Error uploading file:", err);
     }
@@ -99,6 +130,31 @@ const CameraScreen = (props: ICameraScreenProps) => {
     navigation.navigate(ScreenRouter.LOGIN);
   }
 
+  function handleBarCodeScanned(scanResult: { data: string }): void {
+    try {
+      const employeeCode: any = JSON.parse(`${scanResult?.data}`);
+      if (!employeeCode?.Emp_Id) {
+        Alert.alert("Information", "Qr code is not valid");
+        return;
+      }
+
+      const employee: IEmployee = {
+        Age: employeeCode?.Emp_Id,
+        lastname: employeeCode?.Name,
+        firstname: employeeCode?.Name,
+        Image: employeeCode?.image,
+      };
+
+      userStore.setEmployDetail(employee);
+      userStore.setSelectedEmployeeId(employeeCode?.Emp_Id);
+      navigation.navigate(ScreenRouter.FACE_REGISTRATION, {
+        employee,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -118,17 +174,23 @@ const CameraScreen = (props: ICameraScreenProps) => {
           ratio="4:3"
           style={styles.cameraStyle}
           type={camera}
+          onBarCodeScanned={(scanResult) => {
+            handleBarCodeScanned(scanResult);
+          }}
         />
       </View>
       <View style={styles.formLayout}>
-        <View style={[styles.smallSpacing]}>
-          <Button
-            title={loading ? "loading" : "confirm"}
-            backgroundColor={ThemeColor.PINK_DARKEN_4}
-            color={ThemeColor.WHITE_COLOR}
-            onPress={handleConfirm}
-          />
-        </View>
+        {scanCategory !== ScanCategory.SCAN_QR_CODE && (
+          <View style={[styles.smallSpacing]}>
+            <Button
+              title={loading ? "loading" : "confirm"}
+              backgroundColor={ThemeColor.PINK_DARKEN_4}
+              color={ThemeColor.WHITE_COLOR}
+              onPress={handleConfirm}
+            />
+          </View>
+        )}
+
         <View style={[styles.smallSpacing]}>
           <Button
             title={
@@ -173,4 +235,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CameraScreen;
+export default observer(CameraScreen);

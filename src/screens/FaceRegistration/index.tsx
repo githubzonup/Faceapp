@@ -1,38 +1,81 @@
-import React from "react";
-import { View, StyleSheet, Image, TextInput } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, StyleSheet, Image, TextInput, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import debounce from "lodash/debounce";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
 import UserCard from "../../components/UserCard";
 import { ScanCategory } from "../../types/scanner";
+import useStores from "../../utils/useStore";
+import UserStore from "../../stores/userStore";
 
 interface ILoginProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
 const FaceRegistration = (props: ILoginProps) => {
+  const { userStore } = useStores();
+  const [loading, setLoading] = useState<boolean>(false);
   const { navigation } = props;
+  const { employeeDetail } = userStore;
 
   function handleLogout(): void {
     navigation.navigate(ScreenRouter.LOGIN);
   }
 
   function handleTakeFace(): void {
+    if (
+      !employeeDetail?.firstname &&
+      !employeeDetail?.lastname &&
+      !employeeDetail?.Age &&
+      !employeeDetail?.Image
+    ) {
+      Alert.alert("Information", "User is invalid");
+      return;
+    }
+    if (!userStore?.selectedEmployeeId) {
+      Alert.alert("Information", "User is invalid");
+      return;
+    }
     navigation.navigate(ScreenRouter.CAMERA, {
       scanCategory: ScanCategory.REGISTRATION,
     });
   }
 
   function handleScanQr(): void {
-    navigation.navigate(ScreenRouter.CAMERA);
+    navigation.navigate(ScreenRouter.CAMERA, {
+      ScanCategory: ScanCategory.SCAN_QR_CODE,
+    });
   }
 
   function handleEmployNumber(): void {
+    if (
+      !employeeDetail?.firstname &&
+      !employeeDetail?.lastname &&
+      !employeeDetail?.Age &&
+      !employeeDetail?.Image
+    ) {
+      Alert.alert("Information", "User is invalid");
+      return;
+    }
+    if (!userStore?.selectedEmployeeId) {
+      Alert.alert("Information", "User is invalid");
+      return;
+    }
     navigation.navigate(ScreenRouter.CAMERA, {
       scanCategory: ScanCategory.REGISTRATION,
     });
   }
+
+  const onInputChange = useCallback(
+    debounce(async (store: UserStore, employeeId: string) => {
+      store.setSelectedEmployeeId(employeeId);
+      await store.fetchEmployDetail(employeeId);
+      setLoading(false);
+    }, 30),
+    []
+  );
 
   return (
     <View style={styles.container}>
@@ -59,6 +102,10 @@ const FaceRegistration = (props: ILoginProps) => {
             <TextInput
               style={styles.inputStyle}
               placeholder="ENTER EMPLOY NUMBER"
+              onChangeText={(employeeId: string) => {
+                setLoading(true);
+                onInputChange(userStore, employeeId);
+              }}
             />
           </View>
           <View style={styles.employSubmitLayout}>
@@ -71,7 +118,7 @@ const FaceRegistration = (props: ILoginProps) => {
           </View>
         </View>
         <View style={[styles.userCardLayout, styles.smallSpacing]}>
-          <UserCard />
+          <UserCard employeeDetail={employeeDetail} loading={loading} />
         </View>
         <View style={[styles.smallSpacing]}>
           <Button
