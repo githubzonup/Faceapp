@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-trailapplication-dev-03052-authRole",
+      "UnauthRoleArn": "arn:aws:iam::688399238341:role/amplify-trailapplication-dev-03052-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::688399238341:role/amplify-trailapplication-dev-03052-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-trailapplication-dev-03052-deployment",
+      "UnauthRoleName": "amplify-trailapplication-dev-03052-unauthRole",
+      "StackName": "amplify-trailapplication-dev-03052",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:688399238341:stack/amplify-trailapplication-dev-03052/fd634f60-aaa2-11eb-a21b-0627116e656a",
+      "AmplifyAppId": "di9uzpc3mitch"
+    },
+    "categories": {
+      "auth": {
+        "trailapplication4da2a4db": {}
+      }
+    }
+  }
+}

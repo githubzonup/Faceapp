@@ -1,23 +1,51 @@
-import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
-import { globalStyles } from "../../constants";
+import React, { Fragment } from "react";
+import { View, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { BASE_API_URL, globalStyles, ThemeColor } from "../../constants";
+import { IEmployee } from "../../types";
 import PairLabel from "../PairLabel";
 
-const MOCK_AVATAR =
-  "https://nghesiviet.vn/storage/artist/thong-tin-tieu-su-bill-gates/thong-tin-tieu-su-bill-gates-0.jpg";
+interface IUserCardProps {
+  loading: boolean;
+  employeeDetail: IEmployee;
+}
 
-const UserCard = () => {
+const UserCard = (props: IUserCardProps) => {
+  const { loading, employeeDetail } = props;
+
   return (
     <View
-      style={[globalStyles.container, globalStyles.row, globalStyles.bgWhite, globalStyles.radius]}
+      style={[
+        globalStyles.container,
+        globalStyles.row,
+        globalStyles.bgWhite,
+        globalStyles.radius,
+      ]}
     >
       <View style={styles.avatarLayout}>
-        <Image source={{ uri: MOCK_AVATAR }} style={styles.avatarStyle} />
+        {loading && (
+          <ActivityIndicator size={28} color={ThemeColor.TEAL_DARKEN_4} />
+        )}
+        {!loading && (
+          <Image
+            source={{ uri: `${BASE_API_URL}/face/${employeeDetail?.Image}` }}
+            style={styles.avatarStyle}
+          />
+        )}
       </View>
       <View style={styles.informationLayout}>
-        <PairLabel label="First Name" value="Bill" />
-        <PairLabel label="Last Name" value="Gates" />
-        <PairLabel label="Age" value="60" />
+        {!loading && (
+          <Fragment>
+            <PairLabel
+              label="First Name"
+              value={employeeDetail?.firstname || "Not found"}
+            />
+            <PairLabel
+              label="Last Name"
+              value={employeeDetail?.lastname || "Not found"}
+            />
+            <PairLabel label="Age" value={employeeDetail?.Age || "Not found"} />
+          </Fragment>
+        )}
       </View>
     </View>
   );
@@ -27,6 +55,7 @@ const styles = StyleSheet.create({
   avatarLayout: {
     flex: 1,
     margin: 10,
+    alignSelf: "center",
   },
   avatarStyle: {
     width: "100%",

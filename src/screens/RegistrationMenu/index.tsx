@@ -1,27 +1,33 @@
 import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet, Image, KeyboardAvoidingView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
+import useStores from "../../utils/useStore";
+import { ScanCategory } from "../../types/scanner";
 
 interface IRegistrationMenuProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
 const RegistrationMenu = (props: IRegistrationMenuProps) => {
+  const { userStore } = useStores();
   const { navigation } = props;
 
   function handleRegistration(): void {
-    navigation.navigate(ScreenRouter.FACE_REGISTRATION)
+    navigation.navigate(ScreenRouter.FACE_REGISTRATION);
   }
 
   function handleAttendance(): void {
-    navigation.navigate(ScreenRouter.CAMERA)
+    navigation.navigate(ScreenRouter.CAMERA, {
+      scanCategory: ScanCategory.ATTENDANCE,
+    });
   }
 
-  function handleLogout(): void {
-    navigation.navigate(ScreenRouter.LOGIN)
+  async function handleLogout(): Promise<void> {
+    await userStore.logout();
+    navigation.navigate(ScreenRouter.LOGIN);
   }
 
   return (
@@ -30,37 +36,39 @@ const RegistrationMenu = (props: IRegistrationMenuProps) => {
         style={styles.gradient}
         colors={[ThemeColor.MING, ThemeColor.SMOKY, ThemeColor.TURKISH_ROSE]}
       />
-      <View style={styles.logoutLayout}>
-        <Button
-          title="logout"
-          onPress={handleLogout}
-          color={ThemeColor.WHITE_COLOR}
-        />
-      </View>
-      <View style={styles.logoLayout}>
-        <Image
-          style={styles.logoStyle}
-          source={require("../../../assets/windows.png")}
-        />
-      </View>
-      <View style={styles.formLayout}>
-        <View style={[styles.smallSpacing]}>
+      <KeyboardAvoidingView behavior="position">
+        <View style={styles.logoutLayout}>
           <Button
-            title="registration"
-            backgroundColor={ThemeColor.TEAL_DARKEN_4}
+            title="logout"
+            onPress={handleLogout}
             color={ThemeColor.WHITE_COLOR}
-            onPress={handleRegistration}
           />
         </View>
-        <View style={[styles.smallSpacing]}>
-          <Button
-            title="attendance"
-            backgroundColor={ThemeColor.PINK_DARKEN_4}
-            color={ThemeColor.WHITE_COLOR}
-            onPress={handleAttendance}
+        <View style={styles.logoLayout}>
+          <Image
+            style={styles.logoStyle}
+            source={require("../../../assets/windows.png")}
           />
         </View>
-      </View>
+        <View style={styles.formLayout}>
+          <View style={[styles.smallSpacing]}>
+            <Button
+              title="registration"
+              backgroundColor={ThemeColor.TEAL_DARKEN_4}
+              color={ThemeColor.WHITE_COLOR}
+              onPress={handleRegistration}
+            />
+          </View>
+          <View style={[styles.smallSpacing]}>
+            <Button
+              title="attendance"
+              backgroundColor={ThemeColor.PINK_DARKEN_4}
+              color={ThemeColor.WHITE_COLOR}
+              onPress={handleAttendance}
+            />
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -70,7 +78,7 @@ const styles = StyleSheet.create({
   gradient: globalStyles.gradient,
   logoutLayout: {
     width: 80,
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     textAlign: "right",
   },
   titleLayout: {
