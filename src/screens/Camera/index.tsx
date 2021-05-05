@@ -26,7 +26,8 @@ interface ICameraScreenProps {
 
 const CameraScreen = (props: ICameraScreenProps) => {
   const { navigation, route } = props;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [openCamera, setOpenCamera] = useState<boolean>(true);
   const [hasPermission, setHasPermission] = useState<unknown>(null);
   const { userStore } = useStores();
   const [camera, setCamera] = useState(Camera.Constants.Type.front);
@@ -58,6 +59,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
+      setOpenCamera(false);
       await Storage.put(`attendance/${imageName}`, blob, {
         contentType: "image/jpeg",
       });
@@ -67,7 +69,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
       const employeeId: string = await searchEmployeeFaceId(faceId);
       if (!employeeId) return;
       await createAttendance(userStore?.userDetail?.manage_id, employeeId);
-      Alert.alert("Completed", faceId);
+      Alert.alert("Information", "Attendance successfully");
       userStore.clearStore();
       navigation.navigate(ScreenRouter.REGISTRATION_MENU);
     } catch (err) {
@@ -80,6 +82,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
       if (!selectedEmployeeId) return;
       const response = await fetch(uri);
       const blob = await response.blob();
+      setOpenCamera(false);
       await Storage.put(`register/${imageName}`, blob, {
         contentType: "image/jpeg",
       });
@@ -94,7 +97,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
         return;
       }
       await insertEmployeeFaceId(faceId, selectedEmployeeId);
-      Alert.alert("Saved face ID", faceId);
+      Alert.alert("Information", "Registration successfully");
       userStore.clearStore();
       navigation.navigate(ScreenRouter.REGISTRATION_MENU);
     } catch (err) {
@@ -169,15 +172,22 @@ const CameraScreen = (props: ICameraScreenProps) => {
         />
       </View>
       <View style={[styles.cameraLayout]}>
-        <Camera
-          ref={(ref: Camera | null) => (cameraRef = ref)}
-          ratio="4:3"
-          style={styles.cameraStyle}
-          type={camera}
-          onBarCodeScanned={(scanResult) => {
-            handleBarCodeScanned(scanResult);
-          }}
-        />
+        {openCamera && (
+          <Camera
+            ref={(ref: Camera | null) => (cameraRef = ref)}
+            ratio="4:3"
+            style={styles.cameraStyle}
+            type={camera}
+            onBarCodeScanned={(scanResult) => {
+              handleBarCodeScanned(scanResult);
+            }}
+          />
+        )}
+        {!openCamera && (
+          <View style={styles.cameraStyle}>
+            <Text style={styles.verifyStyle}>Verifying</Text>
+          </View>
+        )}
       </View>
       <View style={styles.formLayout}>
         {scanCategory !== ScanCategory.SCAN_QR_CODE && (
@@ -232,6 +242,12 @@ const styles = StyleSheet.create({
   },
   mediumSpacing: {
     marginTop: "12%",
+  },
+  verifyStyle: {
+    alignSelf: "center",
+    paddingTop: "50%",
+    color: ThemeColor.WHITE_COLOR,
+    fontSize: 30,
   },
 });
 
