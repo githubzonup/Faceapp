@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import { View, StyleSheet, Image, TextInput, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import debounce from "lodash/debounce";
 import { globalStyles, ScreenRouter, ThemeColor } from "../../constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import Button from "../../components/Button";
-import UserCard from "../../components/UserCard";
 import { ScanCategory } from "../../types/scanner";
 import useStores from "../../utils/useStore";
 import UserStore from "../../stores/userStore";
+import { IEmployee } from "../../types";
+import { observer } from "mobx-react";
 
 interface ILoginProps {
   navigation: NavigationProp<ParamListBase>;
@@ -16,7 +17,6 @@ interface ILoginProps {
 
 const FaceRegistration = (props: ILoginProps) => {
   const { userStore } = useStores();
-  const [loading, setLoading] = useState<boolean>(false);
   const { navigation } = props;
   const { employeeDetail } = userStore;
 
@@ -44,17 +44,20 @@ const FaceRegistration = (props: ILoginProps) => {
   }
 
   function handleScanQr(): void {
-    navigation.navigate(ScreenRouter.CAMERA, {
+    navigation.navigate(ScreenRouter.QR_SCAN, {
       ScanCategory: ScanCategory.SCAN_QR_CODE,
     });
   }
 
-  function handleEmployNumber(): void {
+  async function handleEmployNumber(): Promise<void> {
+    const foundEmployee: IEmployee = await userStore.fetchEmployDetail(
+      userStore?.selectedEmployeeId
+    );
     if (
-      !employeeDetail?.firstname &&
-      !employeeDetail?.lastname &&
-      !employeeDetail?.Age &&
-      !employeeDetail?.Image
+      !foundEmployee?.firstname &&
+      !foundEmployee?.lastname &&
+      !foundEmployee?.Age &&
+      !foundEmployee?.Image
     ) {
       Alert.alert("Information", "User is invalid");
       return;
@@ -63,17 +66,18 @@ const FaceRegistration = (props: ILoginProps) => {
       Alert.alert("Information", "User is invalid");
       return;
     }
-    navigation.navigate(ScreenRouter.CAMERA, {
-      scanCategory: ScanCategory.REGISTRATION,
-    });
+    userStore.setOpenDialog(true);
+    setTimeout(() => {
+      navigation.navigate(ScreenRouter.CAMERA, {
+        scanCategory: ScanCategory.REGISTRATION,
+      });
+    }, 100);
   }
 
   const onInputChange = useCallback(
-    debounce(async (store: UserStore, employeeId: string) => {
+    debounce((store: UserStore, employeeId: string) => {
       store.setSelectedEmployeeId(employeeId);
-      await store.fetchEmployDetail(employeeId);
-      setLoading(false);
-    }, 30),
+    }, 100),
     []
   );
 
@@ -103,7 +107,6 @@ const FaceRegistration = (props: ILoginProps) => {
               style={styles.inputStyle}
               placeholder="ENTER EMPLOY NUMBER"
               onChangeText={(employeeId: string) => {
-                setLoading(true);
                 onInputChange(userStore, employeeId);
               }}
             />
@@ -116,9 +119,6 @@ const FaceRegistration = (props: ILoginProps) => {
               color={ThemeColor.WHITE_COLOR}
             />
           </View>
-        </View>
-        <View style={[styles.userCardLayout, styles.smallSpacing]}>
-          <UserCard employeeDetail={employeeDetail} loading={loading} />
         </View>
         <View style={[styles.smallSpacing]}>
           <Button
@@ -165,9 +165,6 @@ const styles = StyleSheet.create({
   inputLayout: {
     minHeight: 45,
   },
-  userCardLayout: {
-    minHeight: 120,
-  },
   inputStyle: {
     minHeight: 45,
     backgroundColor: ThemeColor.WHITE_COLOR,
@@ -189,4 +186,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FaceRegistration;
+export default observer(FaceRegistration);

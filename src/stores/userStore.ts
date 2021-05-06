@@ -1,25 +1,30 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { action, observable, set } from "mobx";
+import { action, observable } from "mobx";
 import { getEmployeeDetail, login } from "../API/user";
 import { IEmployee, IUser } from "../types";
 import { StorageKeys } from "../constants";
 
 class UserStore {
   @observable
-  public userDetail: IUser = {
+  userDetail: IUser = {
     manage_id: "",
     username: "",
   };
 
-  public employeeDetail: IEmployee = {
+  @observable
+  employeeDetail: IEmployee = {
     firstname: "",
     lastname: "",
     Age: "",
     Image: "",
   };
 
-  public selectedEmployeeId: string = "";
+  @observable
+  selectedEmployeeId: string = "";
+
+  @observable
+  openDialog: boolean = false;
 
   @action
   public setEmployDetail(employeeDetail: any): void {
@@ -58,8 +63,9 @@ class UserStore {
   }
 
   @action
-  public async fetchEmployDetail(employId: string): Promise<void> {
+  public async fetchEmployDetail(employId: string): Promise<IEmployee> {
     this.employeeDetail = await getEmployeeDetail(employId);
+    return this.employeeDetail;
   }
 
   @action
@@ -76,6 +82,11 @@ class UserStore {
       Image: "",
     };
     this.selectedEmployeeId = "";
+  }
+
+  @action
+  public setOpenDialog(openDialog: boolean): void {
+    this.openDialog = openDialog;
   }
 }
 

@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import useStores from "./src/utils/useStore";
 import { Provider } from "mobx-react";
 import RootStore from "./src/stores/rootStore";
+import UserDialog from "./src/components/UserDialog";
 
 Amplify.configure({
   Auth: {
@@ -41,6 +42,7 @@ const App = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+      <UserDialog />
       {!loading && (
         <NavigationContainer>
           <AppNavigator />

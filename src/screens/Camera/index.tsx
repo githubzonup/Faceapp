@@ -17,7 +17,6 @@ import {
 import { observer } from "mobx-react";
 import useStores from "../../utils/useStore";
 import { createAttendance } from "../../API/user";
-import { IEmployee } from "../../types";
 
 interface ICameraScreenProps {
   route: any;
@@ -67,7 +66,11 @@ const CameraScreen = (props: ICameraScreenProps) => {
       const faceId: string = get(faceDocument, "FaceMatches.[0].Face.FaceId");
       await Storage.remove(`attendance/${imageName}`);
       const employeeId: string = await searchEmployeeFaceId(faceId);
-      if (!employeeId) return;
+      if (!employeeId) {
+        Alert.alert("Information", "Employee not found");
+        setOpenCamera(true);
+        return;
+      }
       await createAttendance(userStore?.userDetail?.manage_id, employeeId);
       Alert.alert("Information", "Attendance successfully");
       userStore.clearStore();
@@ -80,6 +83,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
   async function handleRegister(uri: string, imageName: string): Promise<void> {
     try {
       if (!selectedEmployeeId) return;
+      console.log('if (!selectedEmployeeId) return;')
       const response = await fetch(uri);
       const blob = await response.blob();
       setOpenCamera(false);
@@ -94,6 +98,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
       );
       if (!faceId) {
         Alert.alert("Information", "Face not found");
+        setOpenCamera(true);
         return;
       }
       await insertEmployeeFaceId(faceId, selectedEmployeeId);
@@ -133,31 +138,6 @@ const CameraScreen = (props: ICameraScreenProps) => {
     navigation.navigate(ScreenRouter.LOGIN);
   }
 
-  function handleBarCodeScanned(scanResult: { data: string }): void {
-    try {
-      const employeeCode: any = JSON.parse(`${scanResult?.data}`);
-      if (!employeeCode?.Emp_Id) {
-        Alert.alert("Information", "Qr code is not valid");
-        return;
-      }
-
-      const employee: IEmployee = {
-        Age: employeeCode?.Emp_Id,
-        lastname: employeeCode?.Name,
-        firstname: employeeCode?.Name,
-        Image: employeeCode?.image,
-      };
-
-      userStore.setEmployDetail(employee);
-      userStore.setSelectedEmployeeId(employeeCode?.Emp_Id);
-      navigation.navigate(ScreenRouter.FACE_REGISTRATION, {
-        employee,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -178,9 +158,6 @@ const CameraScreen = (props: ICameraScreenProps) => {
             ratio="4:3"
             style={styles.cameraStyle}
             type={camera}
-            onBarCodeScanned={(scanResult) => {
-              handleBarCodeScanned(scanResult);
-            }}
           />
         )}
         {!openCamera && (
