@@ -51,27 +51,22 @@ const CameraScreen = (props: ICameraScreenProps) => {
     return <Text>No access to camera</Text>;
   }
 
-  async function handleAttendance(
-    uri: string,
-    imageName: string
-  ): Promise<void> {
+  async function handleAttendance(base64: string): Promise<void> {
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
       setOpenCamera(false);
-      await Storage.put(`attendance/${imageName}`, blob, {
-        contentType: "image/jpeg",
-      });
-      const faceDocument = await verifyFaceId(imageName);
-      const faceId: string = get(faceDocument, "FaceMatches.[0].Face.FaceId");
-      await Storage.remove(`attendance/${imageName}`);
-      const employeeId: string = await searchEmployeeFaceId(faceId);
+      const faceDocument = await verifyFaceId(base64);
+      const employeeIds: string[] = await Promise.all(
+        faceDocument?.FaceMatches?.map((FaceMatch: any) =>
+          searchEmployeeFaceId(FaceMatch?.Face?.FaceId)
+        )
+      );
+      const employeeId = employeeIds?.find((id) => !!id);
       if (!employeeId) {
         Alert.alert("Information", "Employee not found");
         setOpenCamera(true);
         return;
       }
-      await createAttendance(userStore?.userDetail?.manage_id, employeeId);
+      createAttendance(userStore?.userDetail?.manage_id, employeeId);
       Alert.alert("Information", "Attendance successfully");
       userStore.clearStore();
       navigation.navigate(ScreenRouter.REGISTRATION_MENU);
@@ -83,7 +78,6 @@ const CameraScreen = (props: ICameraScreenProps) => {
   async function handleRegister(uri: string, imageName: string): Promise<void> {
     try {
       if (!selectedEmployeeId) return;
-      console.log('if (!selectedEmployeeId) return;')
       const response = await fetch(uri);
       const blob = await response.blob();
       setOpenCamera(false);
@@ -112,13 +106,17 @@ const CameraScreen = (props: ICameraScreenProps) => {
 
   async function handleConfirm(): Promise<void> {
     setLoading(true);
-    let photo = await cameraRef?.takePictureAsync({ quality: 0.5 });
+    let photo = await cameraRef?.takePictureAsync({
+      quality: 0.1,
+      base64: true,
+    });
     const uri: string = photo?.uri || "";
+    const base64: string = photo?.base64 || "";
     const imageNameChunks: string[] = uri?.split("/");
     const imageName: string = imageNameChunks[imageNameChunks?.length - 1];
 
     if (scanCategory === ScanCategory.ATTENDANCE) {
-      await handleAttendance(uri, imageName);
+      await handleAttendance(base64);
     }
 
     if (scanCategory === ScanCategory.REGISTRATION) {

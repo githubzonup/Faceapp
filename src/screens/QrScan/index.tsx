@@ -19,7 +19,7 @@ const QrScanScreen = (props: IQrScanScreenProps) => {
   const { navigation } = props;
   const [hasPermission, setHasPermission] = useState<unknown>(null);
   const { userStore } = useStores();
-  const [camera, setCamera] = useState(Camera.Constants.Type.front);
+  const [camera, setCamera] = useState(Camera.Constants.Type.back);
 
   async function requestCameraPermission(): Promise<void> {
     const { status } = await Camera.requestPermissionsAsync();

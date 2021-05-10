@@ -8,11 +8,11 @@ export async function registerFaceId(imageName: string): Promise<any> {
   return response?.data;
 }
 
-export async function verifyFaceId(imageName: string): Promise<any> {
+export async function verifyFaceId(base64: any): Promise<any> {
   const response: AxiosResponse = await axios.post(
     `${BASE_FACE_ID}/face/verify`,
     {
-      imageName,
+      base64,
     }
   );
   return response?.data;
