@@ -35,6 +35,9 @@ const UserCard = (props: IUserCardProps) => {
       <View style={styles.informationLayout}>
         {!loading && (
           <Fragment>
+            {employeeDetail?.Emp_Id && (
+              <PairLabel label="ID" value={employeeDetail?.Emp_Id} />
+            )}
             <PairLabel
               label="First Name"
               value={employeeDetail?.firstname || "Not found"}

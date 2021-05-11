@@ -13,7 +13,7 @@ const UserDialog = () => {
   return (
     <Dialog
       visible={userStore.openDialog}
-      dialogTitle={<DialogTitle title="Dialog Title" />}
+      dialogTitle={<DialogTitle title="User information" />}
     >
       <DialogContent>
         <View style={styles.container}>

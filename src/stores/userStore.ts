@@ -14,6 +14,7 @@ class UserStore {
 
   @observable
   employeeDetail: IEmployee = {
+    Emp_Id: "",
     firstname: "",
     lastname: "",
     Age: "",

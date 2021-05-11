@@ -57,7 +57,8 @@ const QrScanScreen = (props: IQrScanScreenProps) => {
       }
 
       const employee: IEmployee = {
-        Age: employeeCode?.Emp_Id,
+        Emp_Id: employeeCode?.Emp_Id,
+        Age: employeeCode?.Age,
         lastname: employeeCode?.Name,
         firstname: employeeCode?.Name,
         Image: employeeCode?.image,
