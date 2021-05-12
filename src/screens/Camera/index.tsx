@@ -66,7 +66,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
         setOpenCamera(true);
         return;
       }
-      createAttendance(userStore?.userDetail?.manage_id, employeeId);
+      await createAttendance(userStore?.userDetail?.manage_id, employeeId);
       Alert.alert("Information", "Attendance successfully");
       userStore.clearStore();
       navigation.navigate(ScreenRouter.REGISTRATION_MENU);
