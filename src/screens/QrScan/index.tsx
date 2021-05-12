@@ -20,6 +20,7 @@ const QrScanScreen = (props: IQrScanScreenProps) => {
   const [hasPermission, setHasPermission] = useState<unknown>(null);
   const { userStore } = useStores();
   const [camera, setCamera] = useState(Camera.Constants.Type.back);
+  const [openCamera, setOpenCamera] = useState<boolean>(true);
 
   async function requestCameraPermission(): Promise<void> {
     const { status } = await Camera.requestPermissionsAsync();
@@ -67,13 +68,14 @@ const QrScanScreen = (props: IQrScanScreenProps) => {
       userStore.setEmployDetail(employee);
       userStore.setSelectedEmployeeId(employeeCode?.Emp_Id);
       userStore.setOpenDialog(true);
+      setOpenCamera(false);
 
       setTimeout(() => {
         navigation.navigate(ScreenRouter.CAMERA, {
           employee,
           scanCategory: ScanCategory.REGISTRATION,
         });
-      }, 100);
+      }, 200);
     } catch (error) {
       console.log(error);
     }
@@ -93,14 +95,16 @@ const QrScanScreen = (props: IQrScanScreenProps) => {
         />
       </View>
       <View style={[styles.cameraLayout]}>
-        <Camera
-          ratio="4:3"
-          style={styles.cameraStyle}
-          type={camera}
-          onBarCodeScanned={(scanResult) => {
-            handleBarCodeScanned(scanResult);
-          }}
-        />
+        {openCamera && (
+          <Camera
+            ratio="4:3"
+            style={styles.cameraStyle}
+            type={camera}
+            onBarCodeScanned={(scanResult) => {
+              handleBarCodeScanned(scanResult);
+            }}
+          />
+        )}
       </View>
       <View style={styles.formLayout}>
         <View style={[styles.smallSpacing]}>
