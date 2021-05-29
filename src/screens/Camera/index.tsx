@@ -75,12 +75,32 @@ const CameraScreen = (props: ICameraScreenProps) => {
     }
   }
 
-  async function handleRegister(uri: string, imageName: string): Promise<void> {
+  async function handleRegister(
+    uri: string,
+    base64: string,
+    imageName: string
+  ): Promise<void> {
     try {
       if (!selectedEmployeeId) return;
+      setOpenCamera(false);
+
+      const verifyResult = await verifyFaceId(base64);
+      const employeeIds: string[] = await Promise.all(
+        verifyResult?.FaceMatches?.map((FaceMatch: any) =>
+          searchEmployeeFaceId(FaceMatch?.Face?.FaceId)
+        )
+      );
+      const employeeId = employeeIds?.find((id) => !!id);
+
+      if (employeeId) {
+        Alert.alert("Information", "User have already registered");
+        setOpenCamera(true);
+        return;
+      }
+
       const response = await fetch(uri);
       const blob = await response.blob();
-      setOpenCamera(false);
+
       await Storage.put(`register/${imageName}`, blob, {
         contentType: "image/jpeg",
       });
@@ -120,7 +140,7 @@ const CameraScreen = (props: ICameraScreenProps) => {
     }
 
     if (scanCategory === ScanCategory.REGISTRATION) {
-      await handleRegister(uri, imageName);
+      await handleRegister(uri, base64, imageName);
     }
     setLoading(false);
   }
