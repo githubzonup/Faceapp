@@ -38,3 +38,13 @@ export async function searchEmployeeFaceId(faceId: string): Promise<string> {
   );
   return response?.data?.emp_id;
 }
+
+export async function verifyRegistered(employeeId: string): Promise<string> {
+  const formValues: FormData = new FormData();
+  formValues.append("emp_id", employeeId);
+  const response = await axios.post(
+    `${BASE_API_URL}/face/employee.php`,
+    formValues
+  );
+  return response?.data?.emp_id;
+}

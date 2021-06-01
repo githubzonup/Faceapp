@@ -13,6 +13,7 @@ import {
   registerFaceId,
   searchEmployeeFaceId,
   verifyFaceId,
+  verifyRegistered,
 } from "../../API/faceId";
 import { observer } from "mobx-react";
 import useStores from "../../utils/useStore";
@@ -84,16 +85,38 @@ const CameraScreen = (props: ICameraScreenProps) => {
       if (!selectedEmployeeId) return;
       setOpenCamera(false);
 
-      const verifyResult = await verifyFaceId(base64);
+      const [verifyResult, userRegistered] = await Promise.all([
+        verifyFaceId(base64),
+        verifyRegistered(selectedEmployeeId),
+      ]);
+
       const employeeIds: string[] = await Promise.all(
         verifyResult?.FaceMatches?.map((FaceMatch: any) =>
           searchEmployeeFaceId(FaceMatch?.Face?.FaceId)
         )
       );
-      const employeeId = employeeIds?.find((id) => !!id);
 
-      if (employeeId) {
-        Alert.alert("Information", "User have already registered");
+      const foundEmployeeId = employeeIds?.find(
+        (employeeId: string) => !!employeeId
+      );
+
+      const faceRegistered: boolean =
+        Array.isArray(employeeIds) && !!foundEmployeeId;
+
+      if (faceRegistered) {
+        Alert.alert(
+          "Information",
+          `User have already registered ${String(foundEmployeeId)}`
+        );
+        setOpenCamera(true);
+        return;
+      }
+
+      if (userRegistered) {
+        Alert.alert(
+          "Information",
+          `User have already registered ${selectedEmployeeId}`
+        );
         setOpenCamera(true);
         return;
       }
