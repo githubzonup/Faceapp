@@ -108,7 +108,8 @@ const CameraScreen = (props: ICameraScreenProps) => {
           "Information",
           `User have already registered ${String(foundEmployeeId)}`
         );
-        setOpenCamera(true);
+        userStore.clearStore();
+        navigation.navigate(ScreenRouter.REGISTRATION_MENU);
         return;
       }
 
@@ -117,7 +118,8 @@ const CameraScreen = (props: ICameraScreenProps) => {
           "Information",
           `User have already registered ${selectedEmployeeId}`
         );
-        setOpenCamera(true);
+        userStore.clearStore();
+        navigation.navigate(ScreenRouter.REGISTRATION_MENU);
         return;
       }
 
